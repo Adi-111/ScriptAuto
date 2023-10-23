@@ -17,3 +17,4 @@ This Python script monitors a specified directory and automatically organizes fi
 
 ```bash
 python automatic_file_organizer.py
+

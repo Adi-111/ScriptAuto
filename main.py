@@ -9,37 +9,50 @@ from watchdog.events import FileSystemEventHandler
 
 # Define the directory to monitor
 source_dir = "/Users/tanishjain/Downloads"
-dst_audio = "/Users/tanishjain/Desktop/Adi/Audio"
-dst_img = "/Users/tanishjain/Desktop/Adi/Images"
-dst_vid = "/Users/tanishjain/Desktop/Adi/Video"
-dst_pkg = "/Users/tanishjain/Desktop/Adi/Packages"
-dst_csv = "/Users/tanishjain/Desktop/Adi/CSV"
-dst_dmg = "/Users/tanishjain/Desktop/Adi/DMG"
-dst_doc = "/Users/tanishjain/Desktop/Adi/DOC"
-dst_code = "/Users/tanishjain/Desktop/Adi/Code"
+destinations = {
+    "audio": "/Users/tanishjain/Desktop/Adi/Audio",
+    "images": "/Users/tanishjain/Desktop/Adi/Images",
+    "video": "/Users/tanishjain/Desktop/Adi/Video",
+    "packages": "/Users/tanishjain/Desktop/Adi/Packages",
+    "csv": "/Users/tanishjain/Desktop/Adi/CSV",
+    "dmg": "/Users/tanishjain/Desktop/Adi/DMG",
+    "doc": "/Users/tanishjain/Desktop/Adi/DOC",
+}
+
+# Function to create directories if they don't exist
+
+
+def create_directories():
+    for path in destinations.values():
+        if not os.path.exists(path):
+            os.makedirs(path)
 
 
 # Define a custom event handler that will respond to file system events
+
 class FileEventHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        with os.scandir(source_dir) as entries:
-            for entry in entries:
+        create_directories()  # Ensure directories are created
+        for entry in os.scandir(source_dir):
+            if entry.is_file():
                 name = entry.name
-                dest = source_dir
-                if name.endswith('wav') or name.endswith('mp3'):
-                    shutil.move(source_dir, dst_audio)
-                elif name.endswith('jpg') or name.endswith('jpeg') or name.endswith('png'):
-                    shutil.move(source_dir, dst_img)
-                elif name.endswith('mov') or name.endswith('mp4'):
-                    shutil.move(source_dir, dst_vid)
-                elif name.endswith('csv'):
-                    shutil.move(source_dir, dst_csv)
-                elif name.endswith('pkg'):
-                    shutil.move(source_dir, dst_pkg)
-                elif name.endswith('dmg'):
-                    shutil.move(source_dir, dst_dmg)
-                elif name.endswith('pdf') or name.endswith('DOC') or name.endswith('DOCX') or name.endswith('EPS'):
-                    shutil.move(source_dir, dst_doc)
+                extension = name.split(".")[-1].lower()
+
+                for category, destination in destinations.items():
+                    if extension in {"wav", "mp3"} and category == "audio":
+                        shutil.move(entry.path, destination)
+                    elif extension in {"jpg", "jpeg", "png"} and category == "images":
+                        shutil.move(entry.path, destination)
+                    elif extension in {"mov", "mp4"} and category == "video":
+                        shutil.move(entry.path, destination)
+                    elif extension == "csv" and category == "csv":
+                        shutil.move(entry.path, destination)
+                    elif extension == "pkg" and category == "packages":
+                        shutil.move(entry.path, destination)
+                    elif extension == "dmg" and category == "dmg":
+                        shutil.move(entry.path, destination)
+                    elif extension in {"pdf", "doc", "docx", "eps"} and category == "doc":
+                        shutil.move(entry.path, destination)
 
 
 # Create an observer and attach the event handler
@@ -65,3 +78,4 @@ except KeyboardInterrupt:
 
 # Wait for the observer to complete
 observer.join()
+
